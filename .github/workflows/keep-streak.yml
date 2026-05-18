@@ -1,0 +1,28 @@
+name: Keep Streak Active
+
+on:
+  schedule:
+    - cron: '1 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-streak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Make daily commit
+        run: |
+          echo "Last updated: $(date)" >> .streak-log
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "Streak Bot"
+          git add .streak-log
+          git commit -m "Keep streak alive ✨ $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+      
+      - name: Push changes
+        run: |
+          git push origin ${{ github.ref }} || git push origin HEAD:main || git push origin HEAD:master || echo "Push failed"
+
